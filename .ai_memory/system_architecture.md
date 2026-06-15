@@ -25,8 +25,11 @@
 - Imagens do `next/image` usam `unoptimized: true` ou loader compativel com exportacao.
 - O build de producao usa `next build --webpack` pela compatibilidade com o ambiente.
 - `basePath` e `assetPrefix` sao configurados por `NEXT_PUBLIC_BASE_PATH`.
-- No GitHub Actions, `NEXT_PUBLIC_BASE_PATH` e fixado em `/iFinc`; URL e chave
-  publishable do Supabase sao fornecidas por Actions secrets.
+- No GitHub Actions, `NEXT_PUBLIC_BASE_PATH` e fixado em `/iFinc`. A URL usa o
+  secret `NEXT_PUBLIC_SUPABASE_URL`; o secret `SUPABASE_PUBLISHABLE_KEY` e mapeado
+  para `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` durante o build.
+- O Pages deve ser habilitado manualmente com **GitHub Actions** como fonte. O
+  `GITHUB_TOKEN` do workflow nao pode usar `configure-pages` com `enablement: true`.
 
 ## Interface e Design System
 

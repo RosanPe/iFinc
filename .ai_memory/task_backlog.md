@@ -68,8 +68,11 @@
 - [x] Configurar workflow de deploy no GitHub Pages.
 - [x] Conectar o repositorio `RosanPe/iFinc` e definir `/iFinc` como base path de deploy.
 - [x] Publicar o commit inicial na branch `main` do GitHub.
-- [ ] No GitHub, cadastrar os Actions secrets do Supabase e selecionar GitHub Actions
-  como fonte do Pages; depois confirmar o primeiro deploy em producao.
+- [x] Cadastrar os Actions secrets `NEXT_PUBLIC_SUPABASE_URL` e
+  `SUPABASE_PUBLISHABLE_KEY` para o build de producao.
+- [ ] Em **Settings > Pages**, selecionar **GitHub Actions** como fonte e confirmar o
+  primeiro deploy em producao. O build ja passa; `configure-pages` retorna 404
+  enquanto o Pages nao estiver habilitado.
 - [x] Documentar desenvolvimento local, Supabase e variaveis de ambiente.
 - [ ] Validar todos os fluxos contra o projeto Supabase hospedado. Bloqueio anonimo
   confirmado; validacao autenticada depende de dois usuarios existentes porque o
