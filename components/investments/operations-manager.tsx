@@ -1,0 +1,32 @@
+"use client";
+
+import { ArrowDownLeft, ArrowUpRight, Pencil, Plus, Trash2 } from "lucide-react";
+import { type FormEvent, useState } from "react";
+
+import { EmptyState, Field, SectionCard } from "@/components/finance/finance-shared";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { currentDateString } from "@/lib/domain/finance/dates";
+import { calculateAssetPosition } from "@/lib/domain/investments/positions";
+import { formatCurrency } from "@/lib/formatters";
+import type { Account } from "@/lib/repositories/accounts-repository";
+import type { Asset } from "@/lib/repositories/assets-repository";
+import { createInvestmentOperation, deleteInvestmentOperation, type InvestmentOperation, updateInvestmentOperation } from "@/lib/repositories/investment-operations-repository";
+
+type Props = { accounts: Account[]; assets: Asset[]; operations: InvestmentOperation[]; onChange: () => Promise<void>; onError: (error: unknown) => void };
+
+export function OperationsManager({ accounts, assets, operations, onChange, onError }: Props) {
+  const [editing, setEditing] = useState<InvestmentOperation | null>(null);
+  const [kind, setKind] = useState<"buy" | "sell">("buy");
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); const formElement = event.currentTarget; const form = new FormData(formElement);
+    const input = { account_id: String(form.get("accountId")) || null, asset_id: String(form.get("assetId")), fees: Number(form.get("fees")), kind, notes: String(form.get("notes")).trim() || null, operation_date: String(form.get("operationDate")), quantity: Number(form.get("quantity")), unit_price: Number(form.get("unitPrice")) };
+    try { calculateAssetPosition([...operations.filter((item) => item.id !== editing?.id && item.asset_id === input.asset_id), { ...input, created_at: editing?.created_at ?? new Date().toISOString(), id: editing?.id ?? "new-operation" }]); if (editing) await updateInvestmentOperation(editing.id, input); else await createInvestmentOperation(input); setEditing(null); setKind("buy"); formElement.reset(); await onChange(); } catch (error) { onError(error); }
+  }
+  function edit(item: InvestmentOperation) { setEditing(item); setKind(item.kind); }
+  async function remove(item: InvestmentOperation) { if (!window.confirm("Excluir esta operação?")) return; try { calculateAssetPosition(operations.filter((operation) => operation.id !== item.id && operation.asset_id === item.asset_id)); await deleteInvestmentOperation(item.id); await onChange(); } catch (error) { onError(error); } }
+
+  return <div className="space-y-5"><header><p className="text-sm text-muted-foreground">Movimentações da carteira</p><h1 className="mt-1 text-2xl font-bold">Compras e vendas</h1></header><div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]"><SectionCard title={editing ? "Editar operação" : "Nova operação"}><form key={editing?.id ?? "new-operation"} className="space-y-4" onSubmit={submit}><Field label="Tipo" htmlFor="operation-kind"><Select id="operation-kind" value={kind} onChange={(event) => setKind(event.target.value as "buy" | "sell")}><option value="buy">Compra</option><option value="sell">Venda</option></Select></Field><Field label="Ativo" htmlFor="operation-asset"><Select id="operation-asset" name="assetId" defaultValue={editing?.asset_id ?? ""} required><option value="">Selecione</option>{assets.filter((item) => item.is_active || item.id === editing?.asset_id).map((item) => <option key={item.id} value={item.id}>{item.ticker} · {item.name}</option>)}</Select></Field><Field label="Conta (opcional)" htmlFor="operation-account"><Select id="operation-account" name="accountId" defaultValue={editing?.account_id ?? ""}><option value="">Não vincular</option>{accounts.filter((item) => item.is_active || item.id === editing?.account_id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select></Field><Field label="Data" htmlFor="operation-date"><Input id="operation-date" name="operationDate" type="date" defaultValue={editing?.operation_date ?? currentDateString()} required /></Field><div className="grid grid-cols-2 gap-3"><Field label="Quantidade" htmlFor="operation-quantity"><Input id="operation-quantity" name="quantity" type="number" min="0.00000001" step="0.00000001" defaultValue={editing?.quantity} required /></Field><Field label="Preço unitário" htmlFor="operation-price"><Input id="operation-price" name="unitPrice" type="number" min="0" step="0.000001" defaultValue={editing?.unit_price} required /></Field></div><Field label="Taxas" htmlFor="operation-fees"><Input id="operation-fees" name="fees" type="number" min="0" step="0.01" defaultValue={editing?.fees ?? 0} required /></Field><Field label="Observações" htmlFor="operation-notes"><Input id="operation-notes" name="notes" defaultValue={editing?.notes ?? ""} /></Field><div className="flex gap-2"><Button type="submit" disabled={!assets.length}><Plus />{editing ? "Salvar" : "Adicionar"}</Button>{editing ? <Button type="button" variant="outline" onClick={() => { setEditing(null); setKind("buy"); }}>Cancelar</Button> : null}</div></form></SectionCard><SectionCard title="Histórico de operações">{operations.length ? <div className="space-y-2">{operations.map((item) => { const asset = assets.find((entry) => entry.id === item.asset_id); const Icon = item.kind === "buy" ? ArrowDownLeft : ArrowUpRight; return <div key={item.id} className="flex items-center gap-3 rounded-xl border p-3"><span className={item.kind === "buy" ? "rounded-xl bg-blue-500/10 p-2 text-blue-600" : "rounded-xl bg-amber-500/10 p-2 text-amber-600"}><Icon /></span><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{item.kind === "buy" ? "Compra" : "Venda"} de {asset?.ticker ?? "ativo"}</p><p className="text-xs text-muted-foreground">{Number(item.quantity).toLocaleString("pt-BR", { maximumFractionDigits: 8 })} × {formatCurrency(Number(item.unit_price))} · {new Date(`${item.operation_date}T12:00`).toLocaleDateString("pt-BR")}</p></div><div className="flex"><Button size="icon" variant="ghost" aria-label="Editar operação" onClick={() => edit(item)}><Pencil /></Button><Button size="icon" variant="ghost" aria-label="Excluir operação" onClick={() => void remove(item)}><Trash2 /></Button></div></div>; })}</div> : <EmptyState>Nenhuma operação registrada.</EmptyState>}</SectionCard></div></div>;
+}

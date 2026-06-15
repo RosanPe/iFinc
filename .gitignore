@@ -1,0 +1,16 @@
+# dependencies
+/node_modules
+
+# next
+/.next
+/out
+
+# local environment and secrets
+.env*
+!.env.local.example
+/.supabaseSecret/
+
+# tooling
+*.tsbuildinfo
+.DS_Store
+npm-debug.log*
