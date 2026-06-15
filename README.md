@@ -46,10 +46,11 @@ O workflow `.github/workflows/deploy-pages.yml` valida e publica a branch `main`
 `https://rosanpe.github.io/iFinc/`, usando `NEXT_PUBLIC_BASE_PATH=/iFinc`.
 
 Antes do primeiro deploy, configure no repositorio os Actions secrets
-`NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Apesar de serem
-valores publicos no bundle do navegador, os secrets evitam manter a configuracao do
-projeto hospedado versionada. Em **Settings > Pages**, selecione **GitHub Actions**
-como fonte de publicacao.
+`NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY`. O workflow mapeia o segundo
+para `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` durante o build. Apesar de serem valores
+publicos no bundle do navegador, os secrets evitam manter a configuracao do projeto
+hospedado versionada. Em **Settings > Pages**, selecione **GitHub Actions** como fonte
+de publicacao.
 
 ## Autenticacao
 
