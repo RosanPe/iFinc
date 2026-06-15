@@ -85,6 +85,10 @@
   somente depois de lint, TypeScript, testes e build passarem.
 - A rota raiz usa redirecionamento client-side para `/dashboard/`, pois redirects de
   servidor exportados pelo Next nao sao executados pelo GitHub Pages.
+- O commit inicial foi enviado para `main` em 15 de junho de 2026. A ativacao final
+  no GitHub depende de selecionar GitHub Actions como fonte do Pages e cadastrar os
+  dois Actions secrets publicos do Supabase; o ambiente local nao possui `gh` ou
+  token de API para executar essas operacoes administrativas.
 - Login, cadastro, recuperacao, redefinicao de senha, persistencia de sessao e protecao
   das rotas internas foram implementados no client-side.
 - O cadastro cria perfil e categorias padrao por trigger no Supabase.
